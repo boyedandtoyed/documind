@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -61,7 +61,7 @@ class QueryResponse(BaseModel):
     metrics: EvaluationMetrics = Field(default_factory=EvaluationMetrics)
     model_used: str = ""
     latency_ms: float = 0.0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     graph_entities: List[str] = Field(default_factory=list)
 
 

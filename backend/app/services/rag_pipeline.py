@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, TypedDict
 
 from app.models.document import Chunk
 from app.models.query import Citation, EvaluationMetrics, QueryRequest, QueryResponse, StreamChunk
@@ -23,8 +23,24 @@ SYSTEM_PROMPT = (
 )
 
 
-class PipelineState(Dict[str, Any]):
-    pass
+class PipelineState(TypedDict, total=False):
+    query: str
+    query_id: str
+    top_k: int
+    hybrid_alpha: float
+    use_graph: bool
+    filters: Dict[str, Any]
+    started_at: float
+    latency_ms: float
+    retrieved: List[tuple]
+    query_embedding: List[float]
+    reranked: List[tuple]
+    graph_entities: List[str]
+    graph_chunk_ids: List[str]
+    answer: str
+    citations: List[Citation]
+    contexts: List[str]
+    metrics: EvaluationMetrics
 
 
 class RAGPipeline:
@@ -52,6 +68,24 @@ class RAGPipeline:
         self.reranker = CrossEncoderReranker()
         self.rerank_top_k = rerank_top_k
         self._llm = None
+        self._graph = self._build_graph()
+
+    def _build_graph(self) -> object:
+        from langgraph.graph import END, StateGraph
+
+        graph = StateGraph(PipelineState)
+        graph.add_node("retrieve", self.node_retrieve)
+        graph.add_node("rerank", self.node_rerank)
+        graph.add_node("graph_enrich", self.node_graph_enrich)
+        graph.add_node("generate", self.node_generate)
+        graph.add_node("evaluate", self.node_evaluate)
+        graph.set_entry_point("retrieve")
+        graph.add_edge("retrieve", "rerank")
+        graph.add_edge("rerank", "graph_enrich")
+        graph.add_edge("graph_enrich", "generate")
+        graph.add_edge("generate", "evaluate")
+        graph.add_edge("evaluate", END)
+        return graph.compile()
 
     def _get_llm(self) -> object:
         if self._llm is None:
@@ -173,6 +207,9 @@ class RAGPipeline:
         answer: str = state.get("answer", "")
         contexts: List[str] = state.get("contexts", [])
         latency_ms: float = state.get("latency_ms", 0.0)
+        if not latency_ms and state.get("started_at"):
+            latency_ms = (time.monotonic() - state["started_at"]) * 1000
+            state["latency_ms"] = latency_ms
 
         asyncio.create_task(
             self.evaluator.evaluate_async(
@@ -198,19 +235,12 @@ class RAGPipeline:
             hybrid_alpha=request.hybrid_alpha,
             use_graph=request.use_graph,
             filters=request.filters,
+            started_at=start,
         )
 
-        for node in [
-            self.node_retrieve,
-            self.node_rerank,
-            self.node_graph_enrich,
-            self.node_generate,
-            self.node_evaluate,
-        ]:
-            state = await node(state)
+        state = await self._graph.ainvoke(state)  # type: ignore[attr-defined]
 
-        latency_ms = (time.monotonic() - start) * 1000
-        state["latency_ms"] = latency_ms
+        latency_ms = state.get("latency_ms", (time.monotonic() - start) * 1000)
 
         return QueryResponse(
             query_id=query_id,

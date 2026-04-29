@@ -4,7 +4,8 @@ import asyncio
 import json
 import logging
 import sqlite3
-from datetime import datetime, timedelta
+from contextlib import closing
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -31,6 +32,7 @@ class EvaluatorService:
         self.llm_model = llm_model
         self._db_initialized = False
         self._llm = None
+        self._ragas_llm = None
 
     def _get_llm(self) -> object:
         if self._llm is None:
@@ -43,15 +45,20 @@ class EvaluatorService:
             )
         return self._llm
 
+    def _get_ragas_llm(self) -> object:
+        if self._ragas_llm is None:
+            from ragas.llms import LangchainLLMWrapper
+            self._ragas_llm = LangchainLLMWrapper(self._get_llm())
+        return self._ragas_llm
+
     async def initialize(self) -> None:
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self._init_db)
+        self._init_db()
         self._db_initialized = True
         logger.info("Evaluator SQLite DB initialized: %s", self.db_path)
 
     def _init_db(self) -> None:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS query_log (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,6 +110,7 @@ class EvaluatorService:
         contexts: List[str],
     ) -> EvaluationMetrics:
         from langchain_core.messages import HumanMessage
+        self._get_ragas_llm()
         context_text = "\n---\n".join(contexts[:5])
         prompt = (
             "You are a RAG evaluation judge. Score the following on a scale of 0.0 to 1.0.\n\n"
@@ -178,12 +186,7 @@ class EvaluatorService:
     ) -> None:
         if not self._db_initialized:
             return
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            self._write_metrics,
-            query_id, query, answer, metrics, latency_ms, context_count,
-        )
+        self._write_metrics(query_id, query, answer, metrics, latency_ms, context_count)
 
     def _write_metrics(
         self,
@@ -194,7 +197,7 @@ class EvaluatorService:
         latency_ms: float,
         context_count: int,
     ) -> None:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             conn.execute(
                 """INSERT INTO query_log
                    (query_id, query, answer, faithfulness, answer_relevancy,
@@ -205,7 +208,7 @@ class EvaluatorService:
                     metrics.faithfulness, metrics.answer_relevancy,
                     metrics.context_recall, metrics.context_precision,
                     latency_ms, context_count,
-                    datetime.utcnow().isoformat(),
+                    datetime.now(UTC).isoformat(),
                 ),
             )
             conn.commit()
@@ -213,13 +216,12 @@ class EvaluatorService:
     async def get_usage_stats(self, total_documents: int = 0, total_chunks: int = 0) -> UsageStats:
         if not self._db_initialized:
             return UsageStats(total_documents=total_documents, total_chunks=total_chunks)
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self._read_usage, total_documents, total_chunks)
+        return self._read_usage(total_documents, total_chunks)
 
     def _read_usage(self, total_documents: int, total_chunks: int) -> UsageStats:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             total = conn.execute("SELECT COUNT(*) FROM query_log").fetchone()[0]
-            today = datetime.utcnow().date().isoformat()
+            today = datetime.now(UTC).date().isoformat()
             today_count = conn.execute(
                 "SELECT COUNT(*) FROM query_log WHERE created_at >= ?", (today,)
             ).fetchone()[0]
@@ -229,7 +231,7 @@ class EvaluatorService:
                    FROM query_log
                    WHERE created_at >= ?
                    GROUP BY day ORDER BY day""",
-                ((datetime.utcnow() - timedelta(days=14)).isoformat(),),
+                ((datetime.now(UTC) - timedelta(days=14)).isoformat(),),
             ).fetchall()
 
         return UsageStats(
@@ -244,11 +246,10 @@ class EvaluatorService:
     async def get_quality_metrics(self) -> QualityMetrics:
         if not self._db_initialized:
             return QualityMetrics()
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self._read_quality)
+        return self._read_quality()
 
     def _read_quality(self) -> QualityMetrics:
-        with sqlite3.connect(self.db_path) as conn:
+        with closing(sqlite3.connect(self.db_path)) as conn:
             avgs = conn.execute(
                 """SELECT AVG(faithfulness), AVG(answer_relevancy),
                           AVG(context_recall), AVG(context_precision), COUNT(*)
@@ -260,7 +261,7 @@ class EvaluatorService:
                    FROM query_log
                    WHERE created_at >= ?
                    GROUP BY day ORDER BY day""",
-                ((datetime.utcnow() - timedelta(days=30)).isoformat(),),
+                ((datetime.now(UTC) - timedelta(days=30)).isoformat(),),
             ).fetchall()
 
         return QualityMetrics(
