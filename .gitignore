@@ -7,3 +7,6 @@ data/
 *.egg-info/
 dist/
 .pytest_cache/
+node_modules/
+.next/
+*.tsbuildinfo
