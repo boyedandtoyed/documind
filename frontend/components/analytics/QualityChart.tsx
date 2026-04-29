@@ -42,8 +42,8 @@ export function QualityChart() {
     return (
       <div className="glass rounded-xl p-6">
         <p className="mb-4 text-sm font-semibold text-white">Quality Over Time</p>
-        <div className="flex h-48 items-center justify-center text-sm text-[#64748B]">
-          No query history yet — start asking questions to see trends.
+        <div className="flex h-48 items-center justify-center text-center text-sm text-[#64748B]">
+          No query history yet. Start asking questions to see trends.
         </div>
       </div>
     );

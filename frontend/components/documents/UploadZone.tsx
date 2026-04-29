@@ -11,7 +11,6 @@ export function UploadZone() {
   const [dragOver, setDragOver] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [resultMessage, setResultMessage] = useState('');
-  const [chunkCount, setChunkCount] = useState(0);
   const { mutateAsync: upload } = useUploadDocument();
 
   const handleFiles = useCallback(
@@ -32,7 +31,6 @@ export function UploadZone() {
       try {
         const result = await upload(file);
         setUploadState('success');
-        setChunkCount(result.chunk_count);
         setResultMessage(`"${file.name}" indexed into ${result.chunk_count} chunks.`);
         setTimeout(() => setUploadState('idle'), 4000);
       } catch (err) {
@@ -56,14 +54,18 @@ export function UploadZone() {
     <div>
       <label
         htmlFor="file-upload"
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         className={`
           flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 transition-all duration-200
-          ${dragOver
-            ? 'border-indigo-500 bg-indigo-500/5'
-            : 'border-[#1E1E2E] bg-[#13131F] hover:border-indigo-500/50 hover:bg-indigo-500/5'
+          ${
+            dragOver
+              ? 'border-indigo-500 bg-indigo-500/5'
+              : 'border-[#1E1E2E] bg-[#13131F] hover:border-indigo-500/50 hover:bg-indigo-500/5'
           }
           ${uploadState === 'uploading' ? 'pointer-events-none opacity-70' : ''}
         `}
@@ -81,10 +83,9 @@ export function UploadZone() {
           <>
             <Loader2 size={32} className="animate-spin text-indigo-400" />
             <div className="text-center">
-              <p className="text-sm font-medium text-white">Indexing document…</p>
-              <p className="text-xs text-[#64748B]">Chunking · Embedding · Storing</p>
+              <p className="text-sm font-medium text-white">Indexing document...</p>
+              <p className="text-xs text-[#64748B]">Chunking / embedding / storing</p>
             </div>
-            {/* Shimmer progress */}
             <div className="h-1.5 w-48 overflow-hidden rounded-full bg-[#1E1E2E]">
               <div className="shimmer h-full w-full rounded-full" />
             </div>
@@ -93,7 +94,7 @@ export function UploadZone() {
           <>
             <CheckCircle2 size={32} className="text-emerald-400" />
             <div className="text-center">
-              <p className="text-sm font-medium text-white">Done!</p>
+              <p className="text-sm font-medium text-white">Done</p>
               <p className="text-xs text-emerald-400">{resultMessage}</p>
             </div>
           </>
@@ -114,9 +115,9 @@ export function UploadZone() {
               <p className="text-sm font-medium text-white">
                 Drop a file or <span className="text-indigo-400">browse</span>
               </p>
-              <p className="mt-1 text-xs text-[#64748B]">PDF · DOCX · TXT · MD — up to 50 MB</p>
+              <p className="mt-1 text-xs text-[#64748B]">PDF / DOCX / TXT / MD up to 50 MB</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               {['PDF', 'DOCX', 'TXT', 'MD'].map((ext) => (
                 <span
                   key={ext}

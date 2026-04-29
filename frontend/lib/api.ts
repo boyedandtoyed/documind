@@ -20,40 +20,39 @@ class ApiError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
+  const headers = new Headers(init?.headers);
+  if (!(init?.body instanceof FormData) && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
   const res = await fetch(url, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...init?.headers,
-    },
+    headers,
   });
 
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
     try {
-      const body = await res.json();
+      const body = (await res.json()) as { detail?: string };
       detail = body.detail ?? detail;
     } catch {
-      // ignore JSON parse errors
+      // Non-JSON error responses still surface as HTTP status text.
     }
     throw new ApiError(res.status, detail);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
   }
 
   return res.json() as Promise<T>;
 }
 
-// ── Documents ────────────────────────────────────────────────────────────────
-
 export const documentsApi = {
   list(page = 1, pageSize = 20): Promise<DocumentListResponse> {
-    return request<DocumentListResponse>(
-      `/documents?page=${page}&page_size=${pageSize}`,
-    );
+    return request<DocumentListResponse>(`/documents?page=${page}&page_size=${pageSize}`);
   },
 
   get(id: string): Promise<Document> {
@@ -66,7 +65,6 @@ export const documentsApi = {
     return request<DocumentUploadResponse>('/documents/upload', {
       method: 'POST',
       body: form,
-      headers: {}, // Let browser set Content-Type with boundary
     });
   },
 
@@ -74,8 +72,6 @@ export const documentsApi = {
     return request<void>(`/documents/${id}`, { method: 'DELETE' });
   },
 };
-
-// ── Query ────────────────────────────────────────────────────────────────────
 
 export const queryApi = {
   query(req: QueryRequest): Promise<QueryResponse> {
@@ -89,8 +85,6 @@ export const queryApi = {
     return `${BASE_URL}/query/stream`;
   },
 };
-
-// ── Analytics ────────────────────────────────────────────────────────────────
 
 export const analyticsApi = {
   usage(): Promise<UsageStats> {

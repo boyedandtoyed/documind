@@ -4,7 +4,7 @@ import { BottomNav, Sidebar } from '@/components/layout/Sidebar';
 
 export default function ChatPage() {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="page-shell flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />

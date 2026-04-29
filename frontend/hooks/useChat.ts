@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 import { queryApi } from '@/lib/api';
 import { streamQuery } from '@/lib/streaming';
@@ -18,13 +17,13 @@ export function useChat() {
 
     setError(null);
     const userMessage: ChatMessage = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       role: 'user',
       content,
       timestamp: new Date(),
     };
 
-    const assistantId = uuidv4();
+    const assistantId = crypto.randomUUID();
     const assistantPlaceholder: ChatMessage = {
       id: assistantId,
       role: 'assistant',

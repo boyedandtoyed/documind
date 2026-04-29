@@ -48,7 +48,7 @@ export async function streamQuery(
           const chunk = JSON.parse(data) as StreamChunk;
           handleChunk(chunk, callbacks);
         } catch {
-          // malformed SSE line — skip
+          // Malformed SSE line; skip and continue reading the stream.
         }
       }
     }

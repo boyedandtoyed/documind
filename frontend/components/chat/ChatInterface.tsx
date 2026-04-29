@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Send, Square, Trash2 } from 'lucide-react';
+import { BookOpenCheck, Database, FileSearch, LockKeyhole, Send, Square, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useChat } from '@/hooks/useChat';
@@ -43,10 +43,9 @@ export function ChatInterface() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Message list */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 pb-32 md:pb-8">
         {isEmpty ? (
-          <EmptyState />
+          <EmptyState onPick={(value) => setInput(value)} />
         ) : (
           <div className="mx-auto max-w-3xl space-y-6">
             <AnimatePresence initial={false}>
@@ -66,26 +65,23 @@ export function ChatInterface() {
         )}
       </div>
 
-      {/* Error banner */}
       {error && (
         <div className="mx-4 mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
           {error}
         </div>
       )}
 
-      {/* Input area */}
-      <div className="border-t border-[#1E1E2E] bg-[#0A0A0F]/80 px-4 py-4 backdrop-blur-sm">
+      <div className="border-t border-[#1E1E2E] bg-[#0A0A0F]/82 px-4 py-4 backdrop-blur-sm">
         <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
-          <div className="relative flex items-end gap-2 rounded-xl border border-[#1E1E2E] bg-[#13131F] p-3 focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all">
+          <div className="relative flex items-end gap-2 rounded-xl border border-[#1E1E2E] bg-[#13131F] p-3 shadow-2xl shadow-black/20 transition-all focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything about your documents…"
+              placeholder="Ask anything about your documents..."
               rows={1}
-              className="flex-1 resize-none bg-transparent text-sm text-[#F1F5F9] placeholder-[#64748B] outline-none"
-              style={{ maxHeight: '160px' }}
+              className="max-h-40 min-h-7 flex-1 resize-none bg-transparent text-sm leading-6 text-[#F1F5F9] outline-none placeholder:text-[#64748B]"
               disabled={isLoading}
             />
             <div className="flex shrink-0 items-center gap-2">
@@ -93,7 +89,7 @@ export function ChatInterface() {
                 <button
                   type="button"
                   onClick={clearMessages}
-                  className="rounded-lg p-1.5 text-[#64748B] transition hover:bg-white/5 hover:text-white"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] transition hover:bg-white/5 hover:text-white"
                   title="Clear chat"
                 >
                   <Trash2 size={15} />
@@ -103,7 +99,7 @@ export function ChatInterface() {
                 <button
                   type="button"
                   onClick={stopStreaming}
-                  className="flex items-center gap-1.5 rounded-lg bg-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400 transition hover:bg-red-500/30"
+                  className="flex h-8 items-center gap-1.5 rounded-lg bg-red-500/20 px-3 text-xs font-medium text-red-400 transition hover:bg-red-500/30"
                 >
                   <Square size={12} />
                   Stop
@@ -112,7 +108,7 @@ export function ChatInterface() {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:from-indigo-400 hover:to-violet-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-8 items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3 text-xs font-semibold text-white transition hover:from-indigo-400 hover:to-violet-400 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Send size={13} />
                   Send
@@ -120,8 +116,8 @@ export function ChatInterface() {
               )}
             </div>
           </div>
-          <p className="mt-1.5 text-center text-[10px] text-[#64748B]">
-            gemma3:27b · nomic-embed-text · Qdrant + Neo4j · Fully local
+          <p className="mt-2 text-center text-[10px] text-[#64748B]">
+            gemma3:27b / nomic-embed-text / Qdrant + Neo4j / fully local
           </p>
         </form>
       </div>
@@ -129,32 +125,64 @@ export function ChatInterface() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ onPick }: { onPick: (value: string) => void }) {
+  const suggestions = [
+    'Summarize the key findings with citations',
+    'What are the main risks?',
+    'Compare the two approaches',
+  ];
+
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 shadow-lg shadow-indigo-500/25">
-        <span className="text-2xl">⚡</span>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold text-white">DocuMind</h3>
-        <p className="mt-1 max-w-sm text-sm text-[#64748B]">
-          Upload documents and ask questions. Answers are grounded in your data with source citations.
+    <div className="mx-auto flex min-h-full max-w-4xl flex-col justify-center gap-8 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="max-w-2xl"
+      >
+        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#1E1E2E] bg-[#13131F]/80 px-3 py-1 text-xs font-medium text-[#64748B]">
+          <LockKeyhole size={13} className="text-indigo-400" />
+          Fully local RAG on your own GPU
+        </div>
+        <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-5xl">
+          Ask your documents. Keep every token local.
+        </h2>
+        <p className="mt-4 max-w-xl text-sm leading-6 text-[#94A3B8] sm:text-base">
+          DocuMind indexes PDFs, DOCX, TXT, and Markdown into cited answers with hybrid search,
+          graph context, and automatic quality scoring.
         </p>
+      </motion.div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <Feature icon={<FileSearch size={18} />} label="Cited answers" value="Source excerpts stay attached." />
+        <Feature icon={<Database size={18} />} label="Hybrid search" value="Dense vectors, sparse BM25, and RRF fusion." />
+        <Feature icon={<BookOpenCheck size={18} />} label="Quality scored" value="Faithfulness and relevance on every answer." />
       </div>
-      <div className="flex flex-wrap justify-center gap-2">
-        {[
-          'Summarize the key findings',
-          'What are the main risks?',
-          'Compare the two approaches',
-        ].map((suggestion) => (
-          <span
+
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((suggestion) => (
+          <button
             key={suggestion}
-            className="rounded-full border border-[#1E1E2E] px-3 py-1 text-xs text-[#64748B]"
+            type="button"
+            onClick={() => onPick(suggestion)}
+            className="rounded-full border border-[#1E1E2E] bg-[#13131F]/80 px-3 py-2 text-left text-xs font-medium text-[#94A3B8] transition hover:border-indigo-500/50 hover:text-white"
           >
             {suggestion}
-          </span>
+          </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function Feature({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[#1E1E2E] bg-[#13131F]/78 p-4">
+      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/20 via-violet-500/20 to-pink-500/20 text-indigo-300">
+        {icon}
+      </div>
+      <p className="text-sm font-semibold text-white">{label}</p>
+      <p className="mt-1 text-xs leading-5 text-[#64748B]">{value}</p>
     </div>
   );
 }

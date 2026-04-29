@@ -15,7 +15,6 @@ export function CitationCard({ citation }: CitationCardProps) {
 
   return (
     <div className="rounded-lg border border-[#1E1E2E] bg-[#0D0D17] p-3 text-xs">
-      {/* Header row */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <FileText size={13} className="shrink-0 text-indigo-400" />
@@ -24,7 +23,6 @@ export function CitationCard({ citation }: CitationCardProps) {
             <span className="shrink-0 text-[#64748B]">p.{citation.page_number}</span>
           )}
         </div>
-        {/* Relevance score bar */}
         <div className="flex shrink-0 items-center gap-1.5">
           <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#1E1E2E]">
             <div
@@ -36,7 +34,6 @@ export function CitationCard({ citation }: CitationCardProps) {
         </div>
       </div>
 
-      {/* Excerpt */}
       <button
         onClick={() => setExpanded((v) => !v)}
         className="mt-2 w-full text-left text-[#64748B] transition hover:text-[#94A3B8]"
@@ -45,7 +42,7 @@ export function CitationCard({ citation }: CitationCardProps) {
           {citation.text_excerpt}
         </p>
         {!expanded && citation.text_excerpt.length > 120 && (
-          <span className="text-indigo-400">… show more</span>
+          <span className="text-indigo-400">... show more</span>
         )}
         {expanded && <span className="text-indigo-400">show less</span>}
       </button>

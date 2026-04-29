@@ -1,5 +1,3 @@
-// ── Document Types ──────────────────────────────────────────────────────────
-
 export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type DocumentType = 'pdf' | 'docx' | 'txt' | 'md';
 
@@ -30,8 +28,6 @@ export interface DocumentUploadResponse {
   message: string;
   chunk_count: number;
 }
-
-// ── Query / Chat Types ───────────────────────────────────────────────────────
 
 export interface Citation {
   chunk_id: string;
@@ -71,8 +67,6 @@ export interface QueryResponse {
   graph_entities: string[];
 }
 
-// ── Streaming Types ──────────────────────────────────────────────────────────
-
 export type StreamChunkType = 'start' | 'token' | 'done' | 'error';
 
 export interface StreamChunk {
@@ -82,8 +76,6 @@ export interface StreamChunk {
   citations?: Citation[];
   metrics?: EvaluationMetrics;
 }
-
-// ── Analytics Types ──────────────────────────────────────────────────────────
 
 export interface DailyCount {
   date: string;
@@ -114,8 +106,6 @@ export interface QualityMetrics {
   metrics_over_time: DailyMetrics[];
   sample_size: number;
 }
-
-// ── UI Types ─────────────────────────────────────────────────────────────────
 
 export type MessageRole = 'user' | 'assistant';
 

@@ -10,9 +10,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'DocuMind — Local RAG Engine',
+  title: 'DocuMind - Local RAG Engine',
   description:
-    'Production-grade RAG engine. Fully local, no cloud APIs. gemma3:27b · nomic-embed-text · Qdrant · Neo4j.',
+    'Production-grade RAG engine. Fully local, no cloud APIs. gemma3:27b, nomic-embed-text, Qdrant, and Neo4j.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -12,7 +12,7 @@ export function DocumentList() {
     return (
       <div className="flex items-center justify-center gap-2 py-12 text-sm text-[#64748B]">
         <Loader2 size={16} className="animate-spin" />
-        Loading documents…
+        Loading documents...
       </div>
     );
   }

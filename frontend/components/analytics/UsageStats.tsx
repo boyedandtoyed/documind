@@ -45,7 +45,7 @@ export function UsageStats() {
       <StatRow
         icon={<Clock size={14} />}
         label="Avg. response time"
-        value={data.avg_latency_ms > 0 ? `${(data.avg_latency_ms / 1000).toFixed(1)}s` : '—'}
+        value={data.avg_latency_ms > 0 ? `${(data.avg_latency_ms / 1000).toFixed(1)}s` : '-'}
       />
     </div>
   );
