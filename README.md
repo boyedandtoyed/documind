@@ -2,7 +2,7 @@
 
 **Fully local RAG engine. No cloud. No API keys. Runs on your own GPU.**
 
-DocuMind is a production-grade RAG engine for private document intelligence. Upload PDFs, DOCX, TXT, or Markdown files, ask questions, and receive cited answers powered by `gemma3:27b` and `nomic-embed-text` through Ollama. Retrieval uses Qdrant hybrid search, a Neo4j knowledge graph, CPU reranking, and RAGAS-style quality metrics stored in SQLite.
+DocuMind is a production-grade RAG engine for private document intelligence. Upload PDFs, DOCX, TXT, or Markdown files, ask questions, and receive cited answers powered by `gemma4:26b` and `nomic-embed-text` through Ollama. Retrieval uses Qdrant hybrid search, a Neo4j knowledge graph, CPU reranking, and RAGAS-style quality metrics stored in SQLite.
 
 ## Architecture
 
@@ -29,7 +29,7 @@ PDF/DOCX/TXT
                   +------------------+
                   |  LangGraph RAG   |
                   |  Pipeline        |
-                  |  gemma3:27b      |  (Ollama / P40)
+                  |  gemma4:26b      |  (Ollama / P40)
                   +----------+-------+
                              |
                   +----------v-----------+
@@ -47,7 +47,7 @@ PDF/DOCX/TXT
 
 | Layer | Technology |
 |---|---|
-| LLM | `gemma3:27b` via Ollama |
+| LLM | `gemma4:26b` via Ollama |
 | Embeddings | `nomic-embed-text` via Ollama |
 | Vector DB | Qdrant hybrid dense + sparse search |
 | Knowledge Graph | Neo4j 5 + APOC |
@@ -62,12 +62,12 @@ PDF/DOCX/TXT
 
 Tested target: Dell T5810, Ubuntu 22.04, 40 GB RAM, NVIDIA Tesla P40 24 GB VRAM.
 
-Minimum: 16 GB VRAM. If `gemma3:27b` does not fit your GPU, set `LLM_MODEL=gemma3:12b` in `.env`.
+Minimum: 16 GB VRAM. If `gemma4:26b` does not fit your GPU, set `LLM_MODEL=gemma3:12b` in `.env`.
 
 ## Quick Start
 
 ```bash
-ollama pull gemma3:27b
+ollama pull gemma4:26b
 ollama pull nomic-embed-text
 cp .env.example .env && docker compose up --build
 ```

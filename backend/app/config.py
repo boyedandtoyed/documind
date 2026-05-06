@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # Ollama — runs on host, containers reach it via host.docker.internal
     ollama_base_url: str = Field(default="http://host.docker.internal:11434", alias="OLLAMA_BASE_URL")
-    llm_model: str = Field(default="gemma3:27b", alias="LLM_MODEL")
+    llm_model: str = Field(default="gemma4:26b", alias="LLM_MODEL")
     embedding_model: str = Field(default="nomic-embed-text", alias="EMBEDDING_MODEL")
     embedding_dim: int = Field(default=768, alias="EMBEDDING_DIM")  # nomic-embed-text produces 768-dim
 
