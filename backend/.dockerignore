@@ -1,0 +1,59 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Test & coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Mypy / linting
+.mypy_cache/
+.ruff_cache/
+
+# Local data (never bake into image)
+data/
+*.db
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Env files
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docker (not needed inside the image)
+Dockerfile
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db

@@ -21,12 +21,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
-# Create data directories
-RUN mkdir -p /app/data/uploads
+# Create persistent data directories (volume mounted at /data by compose)
+RUN mkdir -p /data/uploads
 
 # Non-root user for security
 RUN addgroup --system appgroup && adduser --system --group appuser
-RUN chown -R appuser:appgroup /app
+RUN chown -R appuser:appgroup /app /data
 USER appuser
 
 EXPOSE 8000
