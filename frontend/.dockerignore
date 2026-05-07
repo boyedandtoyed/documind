@@ -34,4 +34,5 @@ Thumbs.db
 
 # Misc
 *.log
+*.tsbuildinfo
 README.md
