@@ -8,7 +8,7 @@ services:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz > /dev/null"]
+      test: ["CMD-SHELL", "cat /proc/net/tcp | grep -q '18BD' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     container_name: documind-backend
     ports:
-      - "8000:8000"
+      - "8001:8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
