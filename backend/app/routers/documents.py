@@ -5,7 +5,7 @@ import uuid
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Response,  UploadFile, status
 
 from app.config import Settings, get_settings
 from app.models.document import (
@@ -152,7 +152,7 @@ async def get_document(document_id: str) -> Document:
 async def delete_document(
     document_id: str,
     settings: Annotated[Settings, Depends(get_settings)],
-) -> None:
+) -> Response:
     doc = _document_store.get(document_id)
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
@@ -187,3 +187,4 @@ async def delete_document(
         save_path.unlink()
 
     del _document_store[document_id]
+    return Reponse(status_code=status.HTTP_204_NO_CONTENT)
