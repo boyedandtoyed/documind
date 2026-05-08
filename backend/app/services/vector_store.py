@@ -118,7 +118,7 @@ class VectorStoreService:
         """Dense + sparse search fused with RRF."""
         if self._client is None:
             return []
-        from qdrant_client.models import Filter, FieldCondition, MatchValue, NamedSparseVector, NamedVector  # type: ignore
+        from qdrant_client.models import Filter, FieldCondition, MatchValue, SparseVector, NamedVector  # type: ignore
 
         qdrant_filter = self._build_filter(filters) if filters else None
         sparse_query = self._build_sparse_vector(query_text)
@@ -136,9 +136,9 @@ class VectorStoreService:
         # Sparse search
         sparse_results = await self._client.query_points(  # type: ignore[union-attr]
             collection_name=self.collection_name,
-            query=NamedSparseVector(
-                name=SPARSE_VECTOR_NAME,
-                vector={"indices": sparse_query["indices"], "values": sparse_query["values"]},
+            query=SparseVector(
+                indices=sparse_query["indices"],
+                values=sparse_query["values"],
             ),
             using=SPARSE_VECTOR_NAME,
             limit=top_k * 2,
